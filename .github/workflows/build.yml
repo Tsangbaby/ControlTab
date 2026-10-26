@@ -21,7 +21,6 @@ jobs:
     runs-on: macos-14
     timeout-minutes: 45
     env:
-      THEOS: ${{ runner.temp }}/theos
       THEOS_COMMIT: cfba89a53a05b4a1b822121158acc3669c20602f
       SDK_RELEASE: master-146e41f
       SDK_SHA256: 5e0fd3f01266cce4ce012d4a99b38eb56578fca40d09edc81cd83dee958202fb
@@ -47,6 +46,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          THEOS="$RUNNER_TEMP/theos"
+          echo "THEOS=$THEOS" >> "$GITHUB_ENV"
           git clone --recurse-submodules https://github.com/roothide/theos.git "$THEOS"
           git -C "$THEOS" checkout --detach "$THEOS_COMMIT"
           git -C "$THEOS" submodule update --init --recursive
