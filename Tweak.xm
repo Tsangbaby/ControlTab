@@ -6,7 +6,8 @@
 //   · 长按 → 新建标签页并聚焦地址栏（可直接输入）
 //
 // 原二进制为 Logos 编译，%ctor / %hook / %new / MSHookMessageEx 可一一对应。
-// 本文件按原结构还原（MRR，非 ARC，与原版一致），并修正了原版两处生命周期缺陷。
+// 本文件按原结构还原（MRR，非 ARC）。私有 API 与对象所有权仍需按目标 Safari 版本验证；
+// 下方只做可静态确认的防护，不把静态分析当作运行时兼容证明。
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
@@ -55,15 +56,35 @@ static NSString *const kCTDpkgStatusPath = @"/var/lib/dpkg/status";
 
 #pragma mark - 全局状态
 
-// 改写后的工具栏 items。原版位于 __common 段（零初始化）。
-static NSMutableArray *gToolbarItems = nil;
+// 插件不保留 toolbar items 的进程级副本，避免不同 toolbar 互相覆盖状态。
 
-// 原版用它保证通知只注册一次（见报告「已知缺陷 #3」）
+// 原版用它保证通知只注册一次（多窗口路由仍待设备侧解决）
 static dispatch_once_t gObserverOnceToken;
 
 // 本插件自定义的两个通知名，用于把「工具栏按钮点击」转发给 TabController
 static NSString *const kCTNotificationOpenNewTab = @"openNewTabFromCustomTrashButton";
 static NSString *const kCTNotificationCloseTab  = @"closeTabFromCustomTrashButton";
+
+// 只标记本插件创建的 UIBarButtonItem，供 setItems: 重入时幂等去重。
+// 使用 key 的地址作为关联对象键，不靠图标或 selector 猜测按钮归属。
+static char kCTInjectedButtonKey;
+
+static BOOL CTIsInjectedButton(id item)
+{
+    return [item isKindOfClass:[UIBarButtonItem class]] &&
+           objc_getAssociatedObject(item, &kCTInjectedButtonKey) != nil;
+}
+
+static void CTRemoveInjectedButtons(NSMutableArray *items)
+{
+    NSInteger index = (NSInteger)[items count] - 1;
+    for (; index >= 0; index--) {
+        id item = [items objectAtIndex:(NSUInteger)index];
+        if (CTIsInjectedButton(item)) {
+            [items removeObjectAtIndex:(NSUInteger)index];
+        }
+    }
+}
 
 #pragma mark - 授权校验
 
@@ -71,20 +92,82 @@ static BOOL CTPassedInstallCheck(void)
 {
     NSFileManager *fm = [NSFileManager defaultManager];
     NSString *statusPath = jbroot(kCTDpkgStatusPath);
-
     if (![fm fileExistsAtPath:statusPath]) {
         return NO;
     }
 
+    NSError *error = nil;
     NSString *status = [NSString stringWithContentsOfFile:statusPath
                                                  encoding:NSUTF8StringEncoding
-                                                    error:NULL];
-    if (status.length == 0) {
+                                                    error:&error];
+    if (status.length == 0 || error != nil) {
         return NO;
     }
 
-    NSRange r = [status rangeOfString:kCTDepictionFingerprint];
-    return r.location != NSNotFound;
+    NSString *normalized = [status stringByReplacingOccurrencesOfString:@"\r\n"
+                                                             withString:@"\n"];
+    NSArray *records = [normalized componentsSeparatedByString:@"\n\n"];
+    for (NSString *record in records) {
+        BOOL isTargetPackage = NO;
+        BOOL hasExpectedDepiction = NO;
+        NSArray *lines = [record componentsSeparatedByString:@"\n"];
+        for (NSString *line in lines) {
+            if ([line hasPrefix:@"Package:"]) {
+                NSString *packageName = [[line substringFromIndex:8]
+                    stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+                isTargetPackage = [packageName isEqualToString:@"com.lclrc.controltab"];
+            } else if ([line isEqualToString:kCTDepictionFingerprint]) {
+                hasExpectedDepiction = YES;
+            }
+        }
+        if (isTargetPackage && hasExpectedDepiction) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
+static BOOL CTMethodHasShape(Class cls, SEL selector, char returnKind, unsigned int argumentCount)
+{
+    Method method = class_getInstanceMethod(cls, selector);
+    if (method == NULL || method_getNumberOfArguments(method) != argumentCount) {
+        return NO;
+    }
+
+    char returnType[64] = {0};
+    method_getReturnType(method, returnType, sizeof(returnType));
+    return returnType[0] == returnKind;
+}
+
+static BOOL CTArgumentIsObject(Method method, unsigned int index)
+{
+    if (method == NULL || index >= method_getNumberOfArguments(method)) {
+        return NO;
+    }
+    char argumentType[64] = {0};
+    method_getArgumentType(method, index, argumentType, sizeof(argumentType));
+    return argumentType[0] == '@';
+}
+
+static BOOL CTRequiredSafariAPIsPresent(void)
+{
+    Class tabControllerClass = objc_getClass("TabController");
+    Class toolbarClass = objc_getClass("BrowserToolbar");
+    if (tabControllerClass == Nil || toolbarClass == Nil) {
+        return NO;
+    }
+
+    Method currentTabs = class_getInstanceMethod(tabControllerClass, @selector(_currentTabs));
+    Method activeDocument = class_getInstanceMethod(tabControllerClass, @selector(activeTabDocument));
+    Method toolbarItems = class_getInstanceMethod(toolbarClass, @selector(setItems:));
+
+    return CTMethodHasShape(tabControllerClass, @selector(_currentTabs), '@', 2) &&
+           CTMethodHasShape(tabControllerClass, @selector(_newTabFromTabViewButton), 'v', 2) &&
+           CTMethodHasShape(tabControllerClass, @selector(activeTabDocument), '@', 2) &&
+           CTMethodHasShape(tabControllerClass, @selector(closeTab), 'v', 2) &&
+           CTMethodHasShape(toolbarClass, @selector(setItems:), 'v', 3) &&
+           CTArgumentIsObject(toolbarItems, 2) &&
+           currentTabs != NULL && activeDocument != NULL;
 }
 
 #pragma mark - Hooks
@@ -122,21 +205,24 @@ static BOOL CTPassedInstallCheck(void)
     [generator prepare];
     [generator impactOccurred];
 
-    // 走 Safari 自己的「＋」路径，保证新标签的类型 / 位置 / 动画与系统一致
+    // 复用 Safari 私有的「新建标签」路径；实际类型、顺序和动画需目标设备验证。
     [self _newTabFromTabViewButton];
 
-    // 直接取 ivar：TabDocument 的 _browserController，
-    // 再调私有方法模拟点击地址栏，从而自动聚焦输入框。
-    // 原版此处有一次多余的 release（对同一对象释放两次），已修正。
-    id document = [self activeTabDocument];
-    Ivar ivar = class_getInstanceVariable(object_getClass(document), "_browserController");
-    if (ivar != NULL) {
-        id *slot = (id *)((char *)document + ivar_getOffset(ivar));
-        id browserController = *slot;
-        if (browserController != nil) {
-            [browserController navigationBarURLWasTapped:nil completionHandler:nil];
+    // MRR 下对 +0 返回值保留一个局部所有权，确保读取 ivar 和同步调用期间 document 存活。
+    id document = [[self activeTabDocument] retain];
+    if (document != nil) {
+        Ivar ivar = class_getInstanceVariable(object_getClass(document), "_browserController");
+        const char *ivarType = (ivar != NULL) ? ivar_getTypeEncoding(ivar) : NULL;
+        if (ivar != NULL && ivarType != NULL && ivarType[0] == '@') {
+            id *slot = (id *)((char *)document + ivar_getOffset(ivar));
+            id browserController = *slot;
+            if ([browserController respondsToSelector:
+                    @selector(navigationBarURLWasTapped:completionHandler:)]) {
+                [browserController navigationBarURLWasTapped:nil completionHandler:nil];
+            }
         }
     }
+    [document release];
 
     [generator release];
 }
@@ -145,7 +231,9 @@ static BOOL CTPassedInstallCheck(void)
 // 原版顺序是「先 %orig 再 removeObserver:self」，属 use-after-free，此处已纠正。
 - (void)dealloc
 {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    NSNotificationCenter *nc = [NSNotificationCenter defaultCenter];
+    [nc removeObserver:self name:kCTNotificationOpenNewTab object:nil];
+    [nc removeObserver:self name:kCTNotificationCloseTab object:nil];
     %orig;
 }
 
@@ -156,21 +244,32 @@ static BOOL CTPassedInstallCheck(void)
 
 - (void)setItems:(NSArray *)items
 {
-    // mutableCopy 带 +1，随后直接交给全局变量持有（与原版一致）
+    if (items == nil) {
+        %orig;
+        return;
+    }
+
+    // 每次只使用局部副本；先移除上次注入且带有本插件标记的按钮。
     NSMutableArray *mutableItems = [items mutableCopy];
     if (mutableItems == nil) {
         %orig;
         return;
     }
+    CTRemoveInjectedButtons(mutableItems);
 
-    [gToolbarItems release];
-    gToolbarItems = mutableItems;
-
-    // 垃圾桶图标：UIBarButtonSystemItemTrash == 16（原版硬编码 16）
     UIBarButtonItem *trashItem =
         [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemTrash
                                                      target:self
                                                      action:@selector(closeTab)];
+    if (trashItem == nil) {
+        %orig(items);
+        [mutableItems release];
+        return;
+    }
+    objc_setAssociatedObject(trashItem,
+                             &kCTInjectedButtonKey,
+                             [NSNumber numberWithBool:YES],
+                             OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 
     // Safari 私有能力：给同一个按钮再挂一个长按 action。
     // 若系统没有这个方法（未来版本被移除）就退化为「只有单击」。
@@ -178,17 +277,15 @@ static BOOL CTPassedInstallCheck(void)
         [trashItem _sf_setTarget:self longPressAction:@selector(newTab)];
     }
 
-    // 插到倒数第 3 个位置：位于「分享 / 书签」之前，右侧原有两个按钮位置不变。
-    // 原版未做越界保护，items 少于 3 个时 atIndex 为负数会抛异常，此处已加钳制。
-    NSInteger index = (NSInteger)[gToolbarItems count] - 3;
+    // 保留原来的相对插入规则，并对短数组做下界保护。
+    NSInteger index = (NSInteger)[mutableItems count] - 3;
     if (index < 0) index = 0;
-    if (index > (NSInteger)[gToolbarItems count]) index = (NSInteger)[gToolbarItems count];
-    [gToolbarItems insertObject:trashItem atIndex:(NSUInteger)index];
-
+    if (index > (NSInteger)[mutableItems count]) index = (NSInteger)[mutableItems count];
+    [mutableItems insertObject:trashItem atIndex:(NSUInteger)index];
     [trashItem release];
 
-    // 注意：原版传给原实现的是「改过的数组」，不是入参 items
-    %orig(gToolbarItems);
+    %orig(mutableItems);
+    [mutableItems release];
 }
 
 // 单击垃圾桶：只广播通知，真正的关闭动作交给 TabController 自己的 closeTab
@@ -217,7 +314,18 @@ static BOOL CTPassedInstallCheck(void)
 {
     @autoreleasepool {
         // 原版：校验不通过就整体不 hook，且没有任何提示
-        if (!CTPassedInstallCheck()) {
+        BOOL installGatePassed = CTPassedInstallCheck();
+        if (!installGatePassed) {
+#if CT_DIAGNOSTICS
+            NSLog(@"[ControlTab] hooks skipped: package-record gate failed");
+#endif
+            return;
+        }
+
+        if (!CTRequiredSafariAPIsPresent()) {
+#if CT_DIAGNOSTICS
+            NSLog(@"[ControlTab] hooks skipped: required Safari API shape mismatch");
+#endif
             return;
         }
 

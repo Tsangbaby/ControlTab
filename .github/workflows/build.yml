@@ -1,0 +1,171 @@
+name: ControlTab RootHide build
+
+on:
+  push:
+    branches:
+      - maintenance/phase1
+  pull_request:
+    branches:
+      - maintenance/phase1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: controltab-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-14
+    timeout-minutes: 45
+    env:
+      THEOS_COMMIT: cfba89a53a05b4a1b822121158acc3669c20602f
+      SDK_RELEASE: master-146e41f
+      SDK_SHA256: 5e0fd3f01266cce4ce012d4a99b38eb56578fca40d09edc81cd83dee958202fb
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install host dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          brew install dpkg ldid make xz
+          brew list --versions dpkg ldid make xz
+          XCODE_DEVELOPER_DIR=/Applications/Xcode_15.4.app/Contents/Developer
+          test -d "$XCODE_DEVELOPER_DIR"
+          sudo xcode-select --switch "$XCODE_DEVELOPER_DIR"
+          xcodebuild -version
+          test "$(xcodebuild -version | head -n 1)" = "Xcode 15.4"
+          clang --version
+          gmake --version | head -n 1
+
+      - name: Install pinned roothide Theos and iOS SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          THEOS="$RUNNER_TEMP/theos"
+          echo "THEOS=$THEOS" >> "$GITHUB_ENV"
+          git clone --recurse-submodules https://github.com/roothide/theos.git "$THEOS"
+          git -C "$THEOS" checkout --detach "$THEOS_COMMIT"
+          git -C "$THEOS" submodule update --init --recursive
+          test "$(git -C "$THEOS" rev-parse HEAD)" = "$THEOS_COMMIT"
+          mkdir -p "$THEOS/sdks"
+          curl --fail --location --retry 3 \
+            "https://github.com/theos/sdks/releases/download/$SDK_RELEASE/iPhoneOS16.5.sdk.tar.xz" \
+            --output "$RUNNER_TEMP/iPhoneOS16.5.sdk.tar.xz"
+          echo "$SDK_SHA256  $RUNNER_TEMP/iPhoneOS16.5.sdk.tar.xz" | shasum -a 256 --check
+          tar -xJf "$RUNNER_TEMP/iPhoneOS16.5.sdk.tar.xz" -C "$THEOS/sdks"
+          test -d "$THEOS/sdks/iPhoneOS16.5.sdk"
+
+      - name: Run source and metadata contract tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/source_contract.py
+          python3 tests/contract_models.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          source = Path('Tweak.xm').read_text()
+          control = Path('control').read_text()
+          expected = re.search(r'kCTDepictionFingerprint\s*=\s*@"([^\"]+)"', source)
+          actual = re.search(r'(?m)^SileoDepiction:\s*(.+)$', control)
+          assert expected and actual and expected.group(1) == 'SileoDepiction: ' + actual.group(1)
+          print('PASS: source/control fingerprint exact match')
+          PY
+
+      - name: Build RootHide package
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$THEOS/bin:$PATH"
+          gmake clean package FINALPACKAGE=1
+          shopt -s nullglob
+          PACKAGES=(packages/*.deb)
+          test "${#PACKAGES[@]}" = 1
+
+      - name: Verify package and Mach-O slices
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          PACKAGES=(packages/*.deb)
+          test "${#PACKAGES[@]}" = 1
+          DEB="${PACKAGES[0]}"
+          mkdir -p "$RUNNER_TEMP/controltab-package"
+          dpkg-deb --info "$DEB"
+          dpkg-deb --contents "$DEB"
+          dpkg-deb --extract "$DEB" "$RUNNER_TEMP/controltab-package"
+          mkdir -p "$RUNNER_TEMP/controltab-control"
+          dpkg-deb --control "$DEB" "$RUNNER_TEMP/controltab-control"
+          CONTROL_FILE="$RUNNER_TEMP/controltab-control/control"
+          python3 - "$CONTROL_FILE" <<'PY'
+          from pathlib import Path
+          import sys
+          fields = {}
+          for line in Path(sys.argv[1]).read_text().splitlines():
+              if line and not line[0].isspace() and ':' in line:
+                  k, v = line.split(':', 1)
+                  fields.setdefault(k, []).append(v.strip())
+          assert fields.get('Package') == ['com.lclrc.controltab'], fields
+          assert fields.get('Version') == ['1.0.1~dev1'], fields
+          assert fields.get('Architecture') == ['iphoneos-arm64e'], fields
+          assert fields.get('Firmware') == ['>= 15.0'], fields
+          assert len(fields.get('Installed-Size', [])) == 1, fields
+          assert len(fields.get('SileoDepiction', [])) == 1, fields
+          PY
+          python3 - "$RUNNER_TEMP/controltab-package" <<'PY'
+          import plistlib, sys
+          from pathlib import Path
+          root = Path(sys.argv[1])
+          dylibs = list(root.rglob('ControlTab.dylib'))
+          plists = list(root.rglob('ControlTab.plist'))
+          assert len(dylibs) == 1, f'expected one ControlTab.dylib, got {dylibs}'
+          assert len(plists) == 1, f'expected one ControlTab.plist, got {plists}'
+          with plists[0].open('rb') as f:
+              data = plistlib.load(f)
+          assert data.get('Filter', {}).get('Bundles') == ['com.apple.mobilesafari'], data
+          print('PASS: packaged dylib and Safari filter plist present')
+          PY
+          DYLIB="$(python3 -c 'from pathlib import Path; import sys; p=list(Path(sys.argv[1]).rglob("ControlTab.dylib")); assert len(p)==1, p; print(p[0])' "$RUNNER_TEMP/controltab-package")"
+          BUILD_INFO="$(xcrun --sdk iphoneos vtool -show-build "$DYLIB")"
+          printf '%s\n' "$BUILD_INFO"
+          printf '%s\n' "$BUILD_INFO" | grep -Eq 'minos[[:space:]]+15\.0([[:space:]]|$)'
+          printf '%s\n' "$BUILD_INFO" | grep -Eq 'sdk[[:space:]]+16\.4([[:space:]]|$)'
+          xcrun --sdk iphoneos lipo -info "$DYLIB"
+          LOAD_COMMANDS="$(xcrun --sdk iphoneos otool -L "$DYLIB")"
+          printf '%s\n' "$LOAD_COMMANDS"
+          printf '%s\n' "$LOAD_COMMANDS" | grep -q 'libroothide'
+          xcrun --sdk iphoneos nm -u "$DYLIB" > "$RUNNER_TEMP/undefined-symbols.txt"
+          cat "$RUNNER_TEMP/undefined-symbols.txt"
+          grep -q 'jbroot' "$RUNNER_TEMP/undefined-symbols.txt"
+          grep -q 'MSHookMessageEx' "$RUNNER_TEMP/undefined-symbols.txt"
+          xcrun --sdk iphoneos lipo "$DYLIB" -verify_arch arm64 arm64e
+          mkdir -p verification
+          shasum -a 256 "$DEB" "$DYLIB" | tee verification/artifact-sha256.txt
+          cp "$RUNNER_TEMP/undefined-symbols.txt" verification/undefined-symbols.txt
+          {
+            echo "THEOS_COMMIT=$THEOS_COMMIT"
+            echo "SDK_RELEASE=$SDK_RELEASE"
+            echo "SDK_SHA256=$SDK_SHA256"
+            echo "XCODE_VERSION=$(xcodebuild -version | head -n 1)"
+          } > verification/build-environment.txt
+          {
+            echo '### Package hashes'
+            echo '```text'
+            cat verification/artifact-sha256.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload test candidate artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: controltab-roothide-${{ github.sha }}
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            packages/*.deb
+            verification/*.txt

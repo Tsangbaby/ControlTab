@@ -3,7 +3,7 @@
 
 export THEOS_PACKAGE_SCHEME = roothide
 
-TARGET = iphone:clang:latest:15.0
+TARGET = iphone:clang:16.5:15.0
 ARCHS = arm64 arm64e
 
 INSTALL_TARGET_PROCESSES = MobileSafari
@@ -15,5 +15,9 @@ TWEAK_NAME = ControlTab
 ControlTab_FILES = Tweak.xm
 # 原二进制为 MRR 编译（有显式 retain/release），此处保持一致，不要加 -fobjc-arc
 ControlTab_CFLAGS = -fno-objc-arc
+ControlTab_LDFLAGS = -lroothide
+ifneq ($(CT_DIAGNOSTICS),)
+ControlTab_CFLAGS += -DCT_DIAGNOSTICS=1
+endif
 
 include $(THEOS_MAKE_PATH)/tweak.mk
