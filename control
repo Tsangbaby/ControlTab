@@ -6,6 +6,6 @@ Author: SquidForce
 Section: Tweaks
 Depends: mobilesubstrate (>= 0.9.5000)
 SileoDepiction: https://lclrc.github.io/repo/depictions/native/com.lclrc.controltab/depiction.json
-Version: 1.0
+Version: 1.0.1~dev1
 Architecture: iphoneos-arm64e
-Installed-Size: 168
+Firmware: >= 15.0
