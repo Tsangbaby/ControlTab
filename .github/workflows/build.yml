@@ -143,7 +143,7 @@ jobs:
           cat "$RUNNER_TEMP/undefined-symbols.txt"
           grep -q 'jbroot' "$RUNNER_TEMP/undefined-symbols.txt"
           grep -q 'MSHookMessageEx' "$RUNNER_TEMP/undefined-symbols.txt"
-          xcrun --sdk iphoneos lipo -verify_arch arm64 arm64e "$DYLIB"
+          xcrun --sdk iphoneos lipo "$DYLIB" -verify_arch arm64 arm64e
           mkdir -p verification
           shasum -a 256 "$DEB" "$DYLIB" | tee verification/artifact-sha256.txt
           cp "$RUNNER_TEMP/undefined-symbols.txt" verification/undefined-symbols.txt
