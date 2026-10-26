@@ -22,7 +22,7 @@ ControlTab/
 
 ## 构建
 
-本项目只维护 roothide 包。最低部署目标为 iOS 15.0，不构成跨版本兼容承诺。CI 使用 macOS 14 / Xcode 15.4、固定 roothide/Theos 提交和 iPhoneOS 16.5 SDK；先执行源代码契约测试，再构建并检查 Debian 元数据、包内容、Mach-O 架构和最低系统版本，成功后上传 CI artifact。CI 不会安装设备、respring 或创建 Release。
+本项目只维护 roothide 包。最低部署目标为 iOS 15.0，不构成跨版本兼容承诺。CI 使用 macOS 14 / Xcode 15.4、固定 roothide/Theos 提交和官方 SDK 资产 `iPhoneOS16.5.sdk.tar.xz`（资产内部 `SDKSettings.plist` 及产物 `LC_BUILD_VERSION` 标记为 iOS SDK 16.4）；先执行源码测试，再构建并检查 Debian 元数据、包内容、Mach-O 架构和部署/SDK 标记，成功后上传 CI artifact。CI 不会安装设备、respring 或创建 Release。
 
 本地构建要求相同 Xcode、Theos、SDK、GNU make、ldid 和 xz：
 

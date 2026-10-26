@@ -134,7 +134,7 @@ jobs:
           BUILD_INFO="$(xcrun --sdk iphoneos vtool -show-build "$DYLIB")"
           printf '%s\n' "$BUILD_INFO"
           printf '%s\n' "$BUILD_INFO" | grep -Eq 'minos[[:space:]]+15\.0([[:space:]]|$)'
-          printf '%s\n' "$BUILD_INFO" | grep -Eq 'sdk[[:space:]]+16\.5([[:space:]]|$)'
+          printf '%s\n' "$BUILD_INFO" | grep -Eq 'sdk[[:space:]]+16\.4([[:space:]]|$)'
           xcrun --sdk iphoneos lipo -info "$DYLIB"
           LOAD_COMMANDS="$(xcrun --sdk iphoneos otool -L "$DYLIB")"
           printf '%s\n' "$LOAD_COMMANDS"
