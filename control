@@ -1,0 +1,11 @@
+Package: com.lclrc.controltab
+Name: ControlTab - 控制Safari标签页
+Description: tweak for Safari
+Maintainer: SquidForce
+Author: SquidForce
+Section: Tweaks
+Depends: mobilesubstrate (>= 0.9.5000)
+SileoDepiction: https://lclrc.github.io/repo/depictions/native/com.lclrc.controltab/depiction.json
+Version: 1.0
+Architecture: iphoneos-arm64e
+Installed-Size: 168

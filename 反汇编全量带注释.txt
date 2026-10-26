@@ -1,0 +1,477 @@
+00007324  stp      x28, x27, [sp, #-0x40]!                 
+00007328  stp      x22, x21, [sp, #0x10]                   
+0000732c  stp      x20, x19, [sp, #0x20]                   
+00007330  stp      x29, x30, [sp, #0x30]                   
+00007334  add      x29, sp, #0x30                          
+00007338  sub      sp, sp, #0x410                          
+0000733c  nop                                              
+00007340  ldr      x8, #0x8030                               ; GOT:___stack_chk_guard
+00007344  ldr      x8, [x8]                                
+00007348  stur     x8, [x29, #-0x38]                       
+0000734c  bl       #0x7b0c                                   ; IMP:_objc_autoreleasePoolPush
+00007350  mov      x19, x0                                 
+00007354  nop                                              
+00007358  ldr      x0, #0xc0c0                               ; CLS(NSFileManager)
+0000735c  nop                                              
+00007360  ldr      x1, #0xc000                               ; SEL(defaultManager)
+00007364  bl       #0x7b24                                   ; msgSend[defaultManager]
+00007368  mov      x29, x29                                
+0000736c  bl       #0x7b54                                   ; IMP:_objc_retainAutoreleasedReturnValue
+00007370  mov      x20, x0                                 
+00007374  adr      x0, #0x80d0                             
+00007378  nop                                              
+0000737c  bl       #0x7aac                                   ; IMP:__Z6jbrootP8NSString
+00007380  mov      x29, x29                                
+00007384  bl       #0x7b54                                   ; IMP:_objc_retainAutoreleasedReturnValue
+00007388  mov      x21, x0                                 
+0000738c  nop                                              
+00007390  ldr      x1, #0xc008                               ; SEL(fileExistsAtPath:)
+00007394  mov      x0, x20                                 
+00007398  mov      x2, x21                                 
+0000739c  bl       #0x7b24                                   ; msgSend[fileExistsAtPath:]
+000073a0  mov      x22, x0                                 
+000073a4  mov      x0, x21                                 
+000073a8  bl       #0x7b3c                                   ; IMP:_objc_release
+000073ac  mov      x0, x20                                 
+000073b0  bl       #0x7b3c                                   ; IMP:_objc_release
+000073b4  cbz      w22, #0x7524                            
+000073b8  nop                                              
+000073bc  ldr      x20, #0xc0c8                              ; CLS(NSString)
+000073c0  adr      x0, #0x80d0                             
+000073c4  nop                                              
+000073c8  bl       #0x7aac                                   ; IMP:__Z6jbrootP8NSString
+000073cc  mov      x29, x29                                
+000073d0  bl       #0x7b54                                   ; IMP:_objc_retainAutoreleasedReturnValue
+000073d4  mov      x21, x0                                 
+000073d8  nop                                              
+000073dc  ldr      x1, #0xc010                               ; SEL(stringWithContentsOfFile:encoding:error:)
+000073e0  mov      x0, x20                                 
+000073e4  mov      x2, x21                                 
+000073e8  mov      w3, #4                                  
+000073ec  mov      x4, #0                                  
+000073f0  bl       #0x7b24                                   ; msgSend[stringWithContentsOfFile:encoding:error:]
+000073f4  mov      x29, x29                                
+000073f8  bl       #0x7b54                                   ; IMP:_objc_retainAutoreleasedReturnValue
+000073fc  mov      x20, x0                                 
+00007400  mov      x0, x21                                 
+00007404  bl       #0x7b3c                                   ; IMP:_objc_release
+00007408  nop                                              
+0000740c  ldr      x1, #0xc018                               ; SEL(rangeOfString:)
+00007410  adr      x2, #0x80f0                             
+00007414  nop                                              
+00007418  mov      x0, x20                                 
+0000741c  bl       #0x7b24                                   ; msgSend[rangeOfString:]
+00007420  mov      x8, #0x7fffffffffffffff                 
+00007424  cmp      x0, x8                                  
+00007428  b.eq     #0x751c                                 
+0000742c  adr      x0, #0x7ecb                             
+00007430  nop                                              
+00007434  bl       #0x7b18                                   ; IMP:_objc_getClass
+00007438  mov      x21, x0                                 
+0000743c  nop                                              
+00007440  ldr      x1, #0xc020                               ; SEL(_currentTabs)
+00007444  adr      x2, #0x75a8                             
+00007448  nop                                              
+0000744c  adr      x3, #0xc0f0                             
+00007450  nop                                              
+00007454  bl       #0x7a94                                   ; IMP:_MSHookMessageEx
+00007458  mov      w8, #0x4076                             
+0000745c  movk     w8, #0x3a, lsl #16                      
+00007460  str      w8, [sp, #8]                            
+00007464  nop                                              
+00007468  ldr      x1, #0xc028                               ; SEL(newTabAndType)
+0000746c  adr      x2, #0x7634                             
+00007470  nop                                              
+00007474  add      x3, sp, #8                              
+00007478  mov      x0, x21                                 
+0000747c  bl       #0x7ac4                                   ; IMP:_class_addMethod
+00007480  adr      x0, #0x7ed9                             
+00007484  nop                                              
+00007488  bl       #0x7b6c                                   ; IMP:_sel_registerName
+0000748c  mov      x1, x0                                  
+00007490  adr      x2, #0x774c                             
+00007494  nop                                              
+00007498  adr      x3, #0xc0f8                             
+0000749c  nop                                              
+000074a0  mov      x0, x21                                 
+000074a4  bl       #0x7a94                                   ; IMP:_MSHookMessageEx
+000074a8  adr      x0, #0x7ee1                             
+000074ac  nop                                              
+000074b0  bl       #0x7b18                                   ; IMP:_objc_getClass
+000074b4  mov      x21, x0                                 
+000074b8  nop                                              
+000074bc  ldr      x1, #0xc030                               ; SEL(setItems:)
+000074c0  adr      x2, #0x77bc                             
+000074c4  nop                                              
+000074c8  adr      x3, #0xc100                             
+000074cc  nop                                              
+000074d0  bl       #0x7a94                                   ; IMP:_MSHookMessageEx
+000074d4  mov      w22, #0x4076                            
+000074d8  movk     w22, #0x3a, lsl #16                     
+000074dc  str      w22, [sp, #8]                           
+000074e0  nop                                              
+000074e4  ldr      x1, #0xc038                               ; SEL(newTab)
+000074e8  adr      x2, #0x78e8                             
+000074ec  nop                                              
+000074f0  add      x3, sp, #8                              
+000074f4  mov      x0, x21                                 
+000074f8  bl       #0x7ac4                                   ; IMP:_class_addMethod
+000074fc  str      w22, [sp, #8]                           
+00007500  nop                                              
+00007504  ldr      x1, #0xc040                               ; SEL(closeTab)
+00007508  adr      x2, #0x7954                             
+0000750c  nop                                              
+00007510  add      x3, sp, #8                              
+00007514  mov      x0, x21                                 
+00007518  bl       #0x7ac4                                   ; IMP:_class_addMethod
+0000751c  mov      x0, x20                                 
+00007520  bl       #0x7b3c                                   ; IMP:_objc_release
+00007524  mov      x0, x19                                 
+00007528  bl       #0x7b00                                   ; IMP:_objc_autoreleasePoolPop
+0000752c  ldur     x8, [x29, #-0x38]                       
+00007530  nop                                              
+00007534  ldr      x9, #0x8030                               ; GOT:___stack_chk_guard
+00007538  ldr      x9, [x9]                                
+0000753c  cmp      x9, x8                                  
+00007540  b.ne     #0x755c                                 
+00007544  add      sp, sp, #0x410                          
+00007548  ldp      x29, x30, [sp, #0x30]                   
+0000754c  ldp      x20, x19, [sp, #0x20]                   
+00007550  ldp      x22, x21, [sp, #0x10]                   
+00007554  ldp      x28, x27, [sp], #0x40                   
+00007558  ret                                              
+0000755c  bl       #0x7ab8                                   ; IMP:___stack_chk_fail
+00007560  b        #0x7594                                   ; -> sub_7594
+00007564  b        #0x7594                                   ; -> sub_7594
+00007568  b        #0x7594                                   ; -> sub_7594
+0000756c  b        #0x7594                                   ; -> sub_7594
+00007570  b        #0x7594                                   ; -> sub_7594
+00007574  mov      x19, x0                                 
+00007578  mov      x0, x21                                 
+0000757c  b        #0x759c                                   ; -> sub_759c
+00007580  b        #0x7594                                   ; -> sub_7594
+00007584  mov      x19, x0                                 
+00007588  mov      x0, x21                                 
+0000758c  bl       #0x7b3c                                   ; IMP:_objc_release
+00007590  b        #0x7598                                   ; -> sub_7598
+00007594  mov      x19, x0                                 
+00007598  mov      x0, x20                                 
+0000759c  bl       #0x7b3c                                   ; IMP:_objc_release
+000075a0  mov      x0, x19                                 
+000075a4  bl       #0x7aa0                                   ; IMP:__Unwind_Resume
+000075a8  sub      sp, sp, #0x50                           
+000075ac  stp      x20, x19, [sp, #0x30]                   
+000075b0  stp      x29, x30, [sp, #0x40]                   
+000075b4  add      x29, sp, #0x40                          
+000075b8  mov      x19, x1                                 
+000075bc  mov      x20, x0                                 
+000075c0  nop                                              
+000075c4  ldr      x8, #0x8008                               ; GOT:__NSConcreteStackBlock
+000075c8  str      x8, [sp, #8]                            
+000075cc  nop                                              
+000075d0  ldr      d0, #0x7c70                               ; RAW(00000000c0000000)
+000075d4  str      d0, [sp, #0x10]                         
+000075d8  adr      x8, #0x79c0                             
+000075dc  nop                                              
+000075e0  adr      x9, #0x80b0                             
+000075e4  nop                                              
+000075e8  stp      x8, x9, [sp, #0x18]                     
+000075ec  str      x0, [sp, #0x28]                         
+000075f0  nop                                              
+000075f4  ldr      x8, #0xc108                               ; GLOBAL(g_onceToken)
+000075f8  cmn      x8, #1                                  
+000075fc  b.ne     #0x7620                                 
+00007600  nop                                              
+00007604  ldr      x2, #0xc0f0                               ; GLOBAL(orig:_currentTabs)
+00007608  mov      x0, x20                                 
+0000760c  mov      x1, x19                                 
+00007610  ldp      x29, x30, [sp, #0x40]                   
+00007614  ldp      x20, x19, [sp, #0x30]                   
+00007618  add      sp, sp, #0x50                           
+0000761c  br       x2                                      
+00007620  adr      x0, #0xc108                             
+00007624  nop                                              
+00007628  add      x1, sp, #8                              
+0000762c  bl       #0x7adc                                   ; IMP:_dispatch_once
+00007630  b        #0x7600                                   ; -> sub_7600
+00007634  stp      x22, x21, [sp, #-0x30]!                 
+00007638  stp      x20, x19, [sp, #0x10]                   
+0000763c  stp      x29, x30, [sp, #0x20]                   
+00007640  add      x29, sp, #0x20                          
+00007644  mov      x20, x0                                 
+00007648  nop                                              
+0000764c  ldr      x0, #0xc0d8                               ; CLS(UIImpactFeedbackGenerator)
+00007650  bl       #0x7af4                                   ; IMP:_objc_alloc
+00007654  nop                                              
+00007658  ldr      x1, #0xc058                               ; SEL(initWithStyle:)
+0000765c  mov      w2, #3                                  
+00007660  bl       #0x7b24                                   ; msgSend[initWithStyle:]
+00007664  mov      x19, x0                                 
+00007668  nop                                              
+0000766c  ldr      x1, #0xc060                               ; SEL(prepare)
+00007670  bl       #0x7b24                                   ; msgSend[prepare]
+00007674  nop                                              
+00007678  ldr      x1, #0xc068                               ; SEL(impactOccurred)
+0000767c  mov      x0, x19                                 
+00007680  bl       #0x7b24                                   ; msgSend[impactOccurred]
+00007684  nop                                              
+00007688  ldr      x1, #0xc070                               ; SEL(_newTabFromTabViewButton)
+0000768c  mov      x0, x20                                 
+00007690  bl       #0x7b24                                   ; msgSend[_newTabFromTabViewButton]
+00007694  nop                                              
+00007698  ldr      x1, #0xc078                               ; SEL(activeTabDocument)
+0000769c  mov      x0, x20                                 
+000076a0  bl       #0x7b24                                   ; msgSend[activeTabDocument]
+000076a4  mov      x29, x29                                
+000076a8  bl       #0x7b54                                   ; IMP:_objc_retainAutoreleasedReturnValue
+000076ac  bl       #0x7b48                                   ; IMP:_objc_retain
+000076b0  mov      x20, x0                                 
+000076b4  bl       #0x7b60                                   ; IMP:_object_getClass
+000076b8  adr      x1, #0x7f34                             
+000076bc  nop                                              
+000076c0  bl       #0x7ad0                                   ; IMP:_class_getInstanceVariable
+000076c4  cbz      x0, #0x76d4                             
+000076c8  bl       #0x7ae8                                   ; IMP:_ivar_getOffset
+000076cc  add      x21, x20, x0                            
+000076d0  b        #0x76d8                                   ; -> sub_76d8
+000076d4  mov      x21, #0                                 
+000076d8  mov      x0, x20                                 
+000076dc  bl       #0x7b3c                                   ; IMP:_objc_release
+000076e0  ldr      x0, [x21]                               
+000076e4  nop                                              
+000076e8  ldr      x1, #0xc080                               ; SEL(navigationBarURLWasTapped:completionHandler:)
+000076ec  mov      x2, #0                                  
+000076f0  mov      x3, #0                                  
+000076f4  bl       #0x7b24                                   ; msgSend[navigationBarURLWasTapped:completionHandler:]
+000076f8  mov      x0, x20                                 
+000076fc  bl       #0x7b3c                                   ; IMP:_objc_release
+00007700  mov      x0, x19                                 
+00007704  ldp      x29, x30, [sp, #0x20]                   
+00007708  ldp      x20, x19, [sp, #0x10]                   
+0000770c  ldp      x22, x21, [sp], #0x30                   
+00007710  b        #0x7b3c                                   ; IMP:_objc_release
+00007714  b        #0x7720                                   ; -> sub_7720
+00007718  mov      x21, x0                                 
+0000771c  b        #0x772c                                   ; -> sub_772c
+00007720  mov      x21, x0                                 
+00007724  mov      x0, x20                                 
+00007728  bl       #0x7b3c                                   ; IMP:_objc_release
+0000772c  mov      x0, x20                                 
+00007730  bl       #0x7b3c                                   ; IMP:_objc_release
+00007734  b        #0x773c                                   ; -> sub_773c
+00007738  mov      x21, x0                                 
+0000773c  mov      x0, x19                                 
+00007740  bl       #0x7b3c                                   ; IMP:_objc_release
+00007744  mov      x0, x21                                 
+00007748  bl       #0x7aa0                                   ; IMP:__Unwind_Resume
+0000774c  stp      x20, x19, [sp, #-0x20]!                 
+00007750  stp      x29, x30, [sp, #0x10]                   
+00007754  add      x29, sp, #0x10                          
+00007758  mov      x20, x0                                 
+0000775c  nop                                              
+00007760  ldr      x8, #0xc0f8                               ; GLOBAL(orig:dealloc)
+00007764  blr      x8                                      
+00007768  nop                                              
+0000776c  ldr      x0, #0xc0d0                               ; CLS(NSNotificationCenter)
+00007770  nop                                              
+00007774  ldr      x1, #0xc048                               ; SEL(defaultCenter)
+00007778  bl       #0x7b24                                   ; msgSend[defaultCenter]
+0000777c  mov      x29, x29                                
+00007780  bl       #0x7b54                                   ; IMP:_objc_retainAutoreleasedReturnValue
+00007784  mov      x19, x0                                 
+00007788  nop                                              
+0000778c  ldr      x1, #0xc088                               ; SEL(removeObserver:)
+00007790  mov      x2, x20                                 
+00007794  bl       #0x7b24                                   ; msgSend[removeObserver:]
+00007798  mov      x0, x19                                 
+0000779c  ldp      x29, x30, [sp, #0x10]                   
+000077a0  ldp      x20, x19, [sp], #0x20                   
+000077a4  b        #0x7b3c                                   ; IMP:_objc_release
+000077a8  mov      x20, x0                                 
+000077ac  mov      x0, x19                                 
+000077b0  bl       #0x7b3c                                   ; IMP:_objc_release
+000077b4  mov      x0, x20                                 
+000077b8  bl       #0x7aa0                                   ; IMP:__Unwind_Resume
+000077bc  stp      x24, x23, [sp, #-0x40]!                 
+000077c0  stp      x22, x21, [sp, #0x10]                   
+000077c4  stp      x20, x19, [sp, #0x20]                   
+000077c8  stp      x29, x30, [sp, #0x30]                   
+000077cc  add      x29, sp, #0x30                          
+000077d0  mov      x20, x1                                 
+000077d4  mov      x21, x0                                 
+000077d8  mov      x0, x2                                  
+000077dc  bl       #0x7b48                                   ; IMP:_objc_retain
+000077e0  mov      x19, x0                                 
+000077e4  nop                                              
+000077e8  ldr      x1, #0xc090                               ; SEL(mutableCopy)
+000077ec  bl       #0x7b24                                   ; msgSend[mutableCopy]
+000077f0  adrp     x24, #0xc000                            
+000077f4  ldr      x8, [x24, #0xe8]                          ; GLOBAL(gToolbarItems)
+000077f8  str      x0, [x24, #0xe8]                          ; GLOBAL(gToolbarItems)
+000077fc  mov      x0, x8                                  
+00007800  bl       #0x7b3c                                   ; IMP:_objc_release
+00007804  nop                                              
+00007808  ldr      x0, #0xc0e0                               ; CLS(UIBarButtonItem)
+0000780c  bl       #0x7af4                                   ; IMP:_objc_alloc
+00007810  nop                                              
+00007814  ldr      x4, #0xc040                               ; SEL(closeTab)
+00007818  nop                                              
+0000781c  ldr      x1, #0xc098                               ; SEL(initWithBarButtonSystemItem:target:action:)
+00007820  mov      w2, #0x10                               
+00007824  mov      x3, x21                                 
+00007828  bl       #0x7b24                                   ; msgSend[initWithBarButtonSystemItem:target:action:]
+0000782c  mov      x22, x0                                 
+00007830  nop                                              
+00007834  ldr      x23, #0xc0a0                              ; SEL(_sf_setTarget:longPressAction:)
+00007838  mov      x1, x23                                 
+0000783c  bl       #0x7b30                                   ; IMP:_objc_opt_respondsToSelector
+00007840  tbz      w0, #0, #0x785c                         
+00007844  nop                                              
+00007848  ldr      x3, #0xc038                               ; SEL(newTab)
+0000784c  mov      x0, x22                                 
+00007850  mov      x1, x23                                 
+00007854  mov      x2, x21                                 
+00007858  bl       #0x7b24                                   ; IMP:_objc_msgSend
+0000785c  ldr      x23, [x24, #0xe8]                         ; GLOBAL(gToolbarItems)
+00007860  nop                                              
+00007864  ldr      x1, #0xc0a8                               ; SEL(count)
+00007868  mov      x0, x23                                 
+0000786c  bl       #0x7b24                                   ; msgSend[count]
+00007870  sub      x3, x0, #3                              
+00007874  nop                                              
+00007878  ldr      x1, #0xc0b0                               ; SEL(insertObject:atIndex:)
+0000787c  mov      x0, x23                                 
+00007880  mov      x2, x22                                 
+00007884  bl       #0x7b24                                   ; msgSend[insertObject:atIndex:]
+00007888  nop                                              
+0000788c  ldr      x8, #0xc100                               ; GLOBAL(orig:setItems:)
+00007890  ldr      x2, [x24, #0xe8]                          ; GLOBAL(gToolbarItems)
+00007894  mov      x0, x21                                 
+00007898  mov      x1, x20                                 
+0000789c  blr      x8                                      
+000078a0  mov      x0, x22                                 
+000078a4  bl       #0x7b3c                                   ; IMP:_objc_release
+000078a8  mov      x0, x19                                 
+000078ac  ldp      x29, x30, [sp, #0x30]                   
+000078b0  ldp      x20, x19, [sp, #0x20]                   
+000078b4  ldp      x22, x21, [sp, #0x10]                   
+000078b8  ldp      x24, x23, [sp], #0x40                   
+000078bc  b        #0x7b3c                                   ; IMP:_objc_release
+000078c0  b        #0x78c4                                   ; -> sub_78c4
+000078c4  mov      x20, x0                                 
+000078c8  b        #0x78d8                                   ; -> sub_78d8
+000078cc  mov      x20, x0                                 
+000078d0  mov      x0, x22                                 
+000078d4  bl       #0x7b3c                                   ; IMP:_objc_release
+000078d8  mov      x0, x19                                 
+000078dc  bl       #0x7b3c                                   ; IMP:_objc_release
+000078e0  mov      x0, x20                                 
+000078e4  bl       #0x7aa0                                   ; IMP:__Unwind_Resume
+000078e8  stp      x20, x19, [sp, #-0x20]!                 
+000078ec  stp      x29, x30, [sp, #0x10]                   
+000078f0  add      x29, sp, #0x10                          
+000078f4  mov      x20, x0                                 
+000078f8  nop                                              
+000078fc  ldr      x0, #0xc0d0                               ; CLS(NSNotificationCenter)
+00007900  nop                                              
+00007904  ldr      x1, #0xc048                               ; SEL(defaultCenter)
+00007908  bl       #0x7b24                                   ; msgSend[defaultCenter]
+0000790c  mov      x29, x29                                
+00007910  bl       #0x7b54                                   ; IMP:_objc_retainAutoreleasedReturnValue
+00007914  mov      x19, x0                                 
+00007918  nop                                              
+0000791c  ldr      x1, #0xc0b8                               ; SEL(postNotificationName:object:)
+00007920  adr      x2, #0x8110                             
+00007924  nop                                              
+00007928  mov      x3, x20                                 
+0000792c  bl       #0x7b24                                   ; msgSend[postNotificationName:object:]
+00007930  mov      x0, x19                                 
+00007934  ldp      x29, x30, [sp, #0x10]                   
+00007938  ldp      x20, x19, [sp], #0x20                   
+0000793c  b        #0x7b3c                                   ; IMP:_objc_release
+00007940  mov      x20, x0                                 
+00007944  mov      x0, x19                                 
+00007948  bl       #0x7b3c                                   ; IMP:_objc_release
+0000794c  mov      x0, x20                                 
+00007950  bl       #0x7aa0                                   ; IMP:__Unwind_Resume
+00007954  stp      x20, x19, [sp, #-0x20]!                 
+00007958  stp      x29, x30, [sp, #0x10]                   
+0000795c  add      x29, sp, #0x10                          
+00007960  mov      x20, x0                                 
+00007964  nop                                              
+00007968  ldr      x0, #0xc0d0                               ; CLS(NSNotificationCenter)
+0000796c  nop                                              
+00007970  ldr      x1, #0xc048                               ; SEL(defaultCenter)
+00007974  bl       #0x7b24                                   ; msgSend[defaultCenter]
+00007978  mov      x29, x29                                
+0000797c  bl       #0x7b54                                   ; IMP:_objc_retainAutoreleasedReturnValue
+00007980  mov      x19, x0                                 
+00007984  nop                                              
+00007988  ldr      x1, #0xc0b8                               ; SEL(postNotificationName:object:)
+0000798c  adr      x2, #0x8130                             
+00007990  nop                                              
+00007994  mov      x3, x20                                 
+00007998  bl       #0x7b24                                   ; msgSend[postNotificationName:object:]
+0000799c  mov      x0, x19                                 
+000079a0  ldp      x29, x30, [sp, #0x10]                   
+000079a4  ldp      x20, x19, [sp], #0x20                   
+000079a8  b        #0x7b3c                                   ; IMP:_objc_release
+000079ac  mov      x20, x0                                 
+000079b0  mov      x0, x19                                 
+000079b4  bl       #0x7b3c                                   ; IMP:_objc_release
+000079b8  mov      x0, x20                                 
+000079bc  bl       #0x7aa0                                   ; IMP:__Unwind_Resume
+000079c0  stp      x24, x23, [sp, #-0x40]!                 
+000079c4  stp      x22, x21, [sp, #0x10]                   
+000079c8  stp      x20, x19, [sp, #0x20]                   
+000079cc  stp      x29, x30, [sp, #0x30]                   
+000079d0  add      x29, sp, #0x30                          
+000079d4  mov      x20, x0                                 
+000079d8  adrp     x23, #0xc000                            
+000079dc  ldr      x0, [x23, #0xd0]                          ; CLS(NSNotificationCenter)
+000079e0  nop                                              
+000079e4  ldr      x22, #0xc048                              ; SEL(defaultCenter)
+000079e8  mov      x1, x22                                 
+000079ec  bl       #0x7b24                                   ; IMP:_objc_msgSend
+000079f0  mov      x29, x29                                
+000079f4  bl       #0x7b54                                   ; IMP:_objc_retainAutoreleasedReturnValue
+000079f8  mov      x19, x0                                 
+000079fc  ldr      x2, [x20, #0x20]                        
+00007a00  nop                                              
+00007a04  ldr      x3, #0xc028                               ; SEL(newTabAndType)
+00007a08  nop                                              
+00007a0c  ldr      x21, #0xc050                              ; SEL(addObserver:selector:name:object:)
+00007a10  adr      x4, #0x8110                             
+00007a14  nop                                              
+00007a18  mov      x1, x21                                 
+00007a1c  mov      x5, #0                                  
+00007a20  bl       #0x7b24                                   ; IMP:_objc_msgSend
+00007a24  mov      x0, x19                                 
+00007a28  bl       #0x7b3c                                   ; IMP:_objc_release
+00007a2c  ldr      x0, [x23, #0xd0]                          ; CLS(NSNotificationCenter)
+00007a30  mov      x1, x22                                 
+00007a34  bl       #0x7b24                                   ; IMP:_objc_msgSend
+00007a38  mov      x29, x29                                
+00007a3c  bl       #0x7b54                                   ; IMP:_objc_retainAutoreleasedReturnValue
+00007a40  mov      x19, x0                                 
+00007a44  ldr      x2, [x20, #0x20]                        
+00007a48  nop                                              
+00007a4c  ldr      x3, #0xc040                               ; SEL(closeTab)
+00007a50  adr      x4, #0x8130                             
+00007a54  nop                                              
+00007a58  mov      x1, x21                                 
+00007a5c  mov      x5, #0                                  
+00007a60  bl       #0x7b24                                   ; IMP:_objc_msgSend
+00007a64  mov      x0, x19                                 
+00007a68  ldp      x29, x30, [sp, #0x30]                   
+00007a6c  ldp      x20, x19, [sp, #0x20]                   
+00007a70  ldp      x22, x21, [sp, #0x10]                   
+00007a74  ldp      x24, x23, [sp], #0x40                   
+00007a78  b        #0x7b3c                                   ; IMP:_objc_release
+00007a7c  b        #0x7a80                                   ; -> sub_7a80
+00007a80  mov      x20, x0                                 
+00007a84  mov      x0, x19                                 
+00007a88  bl       #0x7b3c                                   ; IMP:_objc_release
+00007a8c  mov      x0, x20                                 
+00007a90  bl       #0x7aa0                                   ; IMP:__Unwind_Resume
+=== text end 00007a94 ===
