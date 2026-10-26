@@ -3,10 +3,10 @@ name: ControlTab RootHide build
 on:
   push:
     branches:
-      - maintenance/phase1
+      - main
   pull_request:
     branches:
-      - maintenance/phase1
+      - main
   workflow_dispatch:
 
 permissions:

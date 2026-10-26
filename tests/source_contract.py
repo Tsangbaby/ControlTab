@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 source = (ROOT / "Tweak.xm").read_text(encoding="utf-8")
 makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
 control = (ROOT / "control").read_text(encoding="utf-8")
-plist = (ROOT / "ControlTab.plist").read_text(encoding="utf-8")
+workflow = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
 
 errors = []
 
@@ -61,6 +61,8 @@ require("TARGET = iphone:clang:16.5:15.0" in makefile,
 require("latest" not in makefile.lower(), "floating 'latest' toolchain remains in Makefile")
 require("Bundles" in plist and "com.apple.mobilesafari" in plist,
         "Safari injection filter changed unexpectedly")
+require("      - main" in workflow and "maintenance/phase1" not in workflow,
+        "workflow triggers are not aligned to the single main branch")
 
 fields = {}
 for line in control.splitlines():
