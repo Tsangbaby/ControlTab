@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 source = (ROOT / "Tweak.xm").read_text(encoding="utf-8")
 makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
 control = (ROOT / "control").read_text(encoding="utf-8")
+plist = (ROOT / "ControlTab.plist").read_text(encoding="utf-8")
 workflow = (ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8")
 
 errors = []
