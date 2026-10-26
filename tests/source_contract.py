@@ -55,6 +55,7 @@ require("navigationBarURLWasTapped" in source and "respondsToSelector" in source
         "address-bar selector call lacks an explicit capability check")
 
 require("THEOS_PACKAGE_SCHEME = roothide" in makefile, "roothide package scheme is not enabled")
+require("ControlTab_LDFLAGS = -lroothide" in makefile, "libroothide is not linked")
 require("TARGET = iphone:clang:16.5:15.0" in makefile,
         "build target is not pinned to clang 16.5 / minimum iOS 15")
 require("latest" not in makefile.lower(), "floating 'latest' toolchain remains in Makefile")

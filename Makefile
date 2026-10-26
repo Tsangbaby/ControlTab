@@ -15,6 +15,7 @@ TWEAK_NAME = ControlTab
 ControlTab_FILES = Tweak.xm
 # 原二进制为 MRR 编译（有显式 retain/release），此处保持一致，不要加 -fobjc-arc
 ControlTab_CFLAGS = -fno-objc-arc
+ControlTab_LDFLAGS = -lroothide
 ifneq ($(CT_DIAGNOSTICS),)
 ControlTab_CFLAGS += -DCT_DIAGNOSTICS=1
 endif
